@@ -22,17 +22,6 @@ import com.navan.billing.transaction.domain.Transaction;
 import com.navan.billing.transaction.domain.TransactionType;
 import com.navan.billing.transaction.persistence.metadata.MetadataStoreRegistry;
 
-/**
- * Persistence seam for the transaction aggregate: header + tax lines + fee lines, delegating type-specific
- * tables to {@link MetadataStoreRegistry}. Plain SQL via {@link JdbcClient}; no business rules.
- *
- * <p>{@code MANDATORY}: every call must run inside a transaction the service opened. Several methods issue more
- * than one statement (header + lines + metadata), so calling them in autocommit mode would silently break
- * atomicity or allow torn reads. This turns that mistake into an immediate exception.
- *
- * <p>Money crosses this boundary as BigDecimal and is stored as minor units ({@link MinorUnits}); timestamps as
- * {@link DbTime} text; tax rates as plain decimal strings.
- */
 @Repository
 @Transactional(propagation = Propagation.MANDATORY)
 public class TransactionRepository {
@@ -64,13 +53,6 @@ public class TransactionRepository {
         this.metadataStores = metadataStores;
     }
 
-    /**
-     * Inserts the header unless {@code external_id} is taken. Empty result = conflict; nothing was written.
-     *
-     * <p>The conflict target is named explicitly, so only an external_id collision becomes DO NOTHING; any other
-     * constraint violation (CHECK, NOT NULL) still fails loudly. No exception on the duplicate path means the
-     * surrounding transaction stays usable for the follow-up lookup.
-     */
     public OptionalLong insertHeaderIfAbsent(NewTransaction tx, Instant now) {
         return jdbc.sql("""
                         INSERT INTO transactions

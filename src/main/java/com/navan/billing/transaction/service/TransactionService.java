@@ -3,13 +3,18 @@ package com.navan.billing.transaction.service;
 import java.time.Clock;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.navan.billing.common.error.ConflictException;
+import com.navan.billing.common.error.NotFoundException;
+import com.navan.billing.common.id.PublicId;
 import com.navan.billing.common.page.Page;
 import com.navan.billing.common.page.PageRequest;
 import com.navan.billing.transaction.api.PatchTransactionRequest;
 import com.navan.billing.transaction.domain.NewTransaction;
 import com.navan.billing.transaction.domain.Transaction;
+import com.navan.billing.transaction.identity.IdentityClaim;
 import com.navan.billing.transaction.identity.TransactionIdentityService;
 import com.navan.billing.transaction.persistence.TransactionRepository;
 import com.navan.billing.transaction.persistence.metadata.MetadataStoreRegistry;
@@ -39,22 +44,22 @@ public class TransactionService {
         this.clock = clock;
     }
 
-    /**
-     * TODO: create a transaction atomically.
-     *  - Header, tax lines, fee lines and metadata commit together or not at all.
-     *  - Duplicate external_id → ConflictException.duplicateExternalId(...) carrying the existing public id;
-     *    nothing new is persisted.
-     *  - Business validation beyond bean validation (e.g. amount scale ≤ 2 → 400). Do totals need to reconcile
-     *    with fare + taxes + fees? The fixtures don't always add up, so decide and document.
-     *  - Return the stored record as GET would return it.
-     */
+    @Transactional
     public Transaction create(NewTransaction tx) {
-        throw new UnsupportedOperationException("TODO");
+        IdentityClaim claim = identity.claim(tx, clock.instant());
+        if (claim instanceof IdentityClaim.AlreadyExists existing) {
+            throw ConflictException.duplicateExternalId(tx.externalId(),
+                    PublicId.TRANSACTION.encode(existing.existingId()));
+        }
+        long id = ((IdentityClaim.Claimed) claim).id();
+        repository.insertChildren(id, tx);
+        return repository.findById(id).orElseThrow();
     }
 
-    /** TODO: hydrated transaction, or NotFoundException. */
+    @Transactional(readOnly = true)
     public Transaction get(long id) {
-        throw new UnsupportedOperationException("TODO");
+        return repository.findById(id).orElseThrow(() ->
+                new NotFoundException("transaction " + PublicId.TRANSACTION.encode(id) + " not found"));
     }
 
     /** TODO: one bounded page plus a next cursor (null on the last page). Never load the table to page in memory. */
