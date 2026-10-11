@@ -194,7 +194,8 @@ curl -s "$BASE_URL/invoices?limit=1&cursor=$(echo "$PAGE1" | jq -r .next_cursor)
 ### 6. Patch and delete a transaction
 
 PATCH accepts `occurred_at`, `total`, `tax_lines`, `fee_lines` and `metadata`. An omitted field stays unchanged,
-and a list that is sent replaces the whole stored list.
+and a list that is sent replaces the whole stored list. `metadata`, if sent, replaces the stored metadata and must be
+complete for the transaction's stored type. Sending `type`, `external_id` or `currency` is a `400`.
 
 A transaction that is not on an invoice can be changed and deleted:
 

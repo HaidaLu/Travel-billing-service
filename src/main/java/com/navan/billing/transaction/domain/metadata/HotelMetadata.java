@@ -21,6 +21,11 @@ public record HotelMetadata(
         @NotNull BigDecimal roomRatePerNight,
         List<@Valid @NotNull HotelExtra> extras) implements TransactionMetadata {
 
+    /** {@code extras} is optional on the wire; absent means "no extras", so it reads back as an empty list. */
+    public HotelMetadata {
+        extras = extras == null ? List.of() : extras;
+    }
+
     @JsonIgnore
     @Override
     public TransactionType type() {
