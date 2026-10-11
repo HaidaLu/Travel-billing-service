@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.navan.billing.support.ApiTestBase;
 import com.navan.billing.support.Fixtures;
 
-/** Brief #6. A separate class (and DB file) so other tests' rows can't affect the count. */
 class ConcurrentDuplicateCreateTest extends ApiTestBase {
 
     private static final int REQUESTS = 16;

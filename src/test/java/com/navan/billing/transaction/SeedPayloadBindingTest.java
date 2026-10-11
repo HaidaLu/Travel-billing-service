@@ -18,7 +18,6 @@ import com.navan.billing.transaction.domain.metadata.NavanFeeKind;
 import com.navan.billing.transaction.domain.metadata.NavanFeeMetadata;
 import com.navan.billing.transaction.domain.metadata.RailMetadata;
 
-/** Locks the wire contract: every seed payload binds to the right typed metadata; unknowns are rejected. */
 @JsonTest
 class SeedPayloadBindingTest {
 

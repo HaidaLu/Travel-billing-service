@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.navan.billing.support.ApiTestBase;
 import com.navan.billing.support.Fixtures;
 
-/** Required tests from the brief; the number in each name matches the brief's numbered list. */
 class TransactionApiTest extends ApiTestBase {
 
     @Autowired

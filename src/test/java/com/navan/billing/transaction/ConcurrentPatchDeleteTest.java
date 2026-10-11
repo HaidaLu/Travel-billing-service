@@ -24,10 +24,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.navan.billing.support.ApiTestBase;
 import com.navan.billing.support.Fixtures;
 
-/**
- * Brief §4: "Two overlapping PATCH/DELETE on the same id must not tear a row." Last-write-wins is fine; a mix of two
- * writes is not. Own class (and DB file), like t06.
- */
+
 class ConcurrentPatchDeleteTest extends ApiTestBase {
 
     private static final int WRITERS = 12;

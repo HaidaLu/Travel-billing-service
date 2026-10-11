@@ -32,10 +32,6 @@ import com.navan.billing.transaction.domain.metadata.RailMetadata;
 import com.navan.billing.transaction.domain.metadata.TransactionMetadata;
 import com.navan.billing.transaction.persistence.TransactionRepository;
 
-/**
- * Step 2: each type's metadata goes into its own child tables and loads back equal to what was sent. Writes go
- * through {@link TransactionRepository} because the child tables reference the header row.
- */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 class MetadataStoresTest extends SqliteTestBase {
 
