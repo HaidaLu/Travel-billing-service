@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.navan.billing.common.error.BadRequestException;
 import com.navan.billing.common.error.ConflictException;
+import com.navan.billing.common.error.JsonErrors;
 import com.navan.billing.common.error.NotFoundException;
 import com.navan.billing.common.id.PublicId;
 import com.navan.billing.common.page.Page;
@@ -148,12 +149,12 @@ public class TransactionService {
         try {
             metadata = objectMapper.treeToValue(json, metadataStores.forType(type).metadataClass());
         } catch (JsonProcessingException e) {
-            throw new BadRequestException("invalid " + type.wire() + " metadata: " + e.getOriginalMessage());
+            throw new BadRequestException("invalid " + type.wire() + " metadata: " + JsonErrors.describe(e, "metadata"));
         }
         Set<ConstraintViolation<TransactionMetadata>> violations = validator.validate(metadata);
         if (!violations.isEmpty()) {
             throw new BadRequestException(violations.stream()
-                    .map(v -> "metadata." + v.getPropertyPath() + " " + v.getMessage())
+                    .map(v -> JsonErrors.toJsonPath("metadata." + v.getPropertyPath()) + " " + v.getMessage())
                     .sorted()
                     .collect(Collectors.joining("; ")));
         }
