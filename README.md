@@ -29,7 +29,8 @@ Each test class runs against its own temporary SQLite file and never touches `./
 | Money                                               | JSON decimal numbers, stored as integer minor units at scale 2; more than 2 decimals → 400 |
 | Duplicate `external_id`                             | 409 + `existing_id`                                                                        |
 | Same txn id twice on one invoice                    | 409                                                                                        |
-| Txn already on *another* invoice                    | 409                                                                                        |
+| Txn already on *another* invoice                    | 409 (`transaction_already_invoiced`, names the invoice)                                    |
+| Rollup grouping                                     | taxes by (name, rate), rates compared numerically (0.07 = 0.070); fees by name; first-seen order |
 | Pagination                                          | keyset: `?limit=&cursor=` → `{ "items": [...], "next_cursor": "..." }`, no cursor on the last page |
 | `limit`                                             | default 50; `< 1` or `> 100` → 400                                                         |
 | PATCH sends `type` / `external_id` / `currency`     | 400                                                                                        |

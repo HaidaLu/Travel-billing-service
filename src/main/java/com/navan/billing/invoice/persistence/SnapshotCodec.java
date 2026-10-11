@@ -2,6 +2,7 @@ package com.navan.billing.invoice.persistence;
 
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.navan.billing.invoice.domain.TransactionSnapshot;
 
@@ -15,17 +16,19 @@ class SnapshotCodec {
         this.objectMapper = objectMapper;
     }
 
-    /**
-     * TODO: JSON for storage. Must round-trip exactly: decode(encode(s)).equals(s).
-     *  - Gotcha: with EXTERNAL_PROPERTY + visible=true, check the output doesn't contain "type" twice.
-     *  - Money must stay exact (BigDecimal written as JSON number or string, never double).
-     */
     String encode(TransactionSnapshot snapshot) {
-        throw new UnsupportedOperationException("TODO");
+        try {
+            return objectMapper.writeValueAsString(snapshot);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("cannot encode snapshot of " + snapshot.transactionId(), e);
+        }
     }
 
-    /** TODO: inverse of encode. */
     TransactionSnapshot decode(String json) {
-        throw new UnsupportedOperationException("TODO");
+        try {
+            return objectMapper.readValue(json, TransactionSnapshot.class);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("corrupt invoice snapshot: " + json, e);
+        }
     }
 }

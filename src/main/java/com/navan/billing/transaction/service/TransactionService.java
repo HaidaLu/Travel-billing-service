@@ -17,7 +17,7 @@ import com.navan.billing.common.error.NotFoundException;
 import com.navan.billing.common.id.PublicId;
 import com.navan.billing.common.page.Page;
 import com.navan.billing.common.page.PageRequest;
-import com.navan.billing.transaction.api.PatchTransactionRequest;
+import com.navan.billing.transaction.controller.PatchTransactionRequest;
 import com.navan.billing.transaction.domain.NewTransaction;
 import com.navan.billing.transaction.domain.Transaction;
 import com.navan.billing.transaction.domain.TransactionType;

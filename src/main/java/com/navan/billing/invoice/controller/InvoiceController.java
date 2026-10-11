@@ -1,4 +1,4 @@
-package com.navan.billing.invoice.api;
+package com.navan.billing.invoice.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
