@@ -102,6 +102,16 @@ class TransactionApiTest extends ApiTestBase {
         assertThat(rows("three-decimals-1")).isZero();
     }
 
+    /** The fixture's duplicate_flight has "coupons": [] and must stay a 409 (t02); a NEW coupon-less flight is a 400. */
+    @Test
+    void newFlightWithoutCouponsIs400AndStoresNothing() {
+        ResponseEntity<JsonNode> response = post(seed("duplicate_flight", "no-coupons-1"));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody().path("message").asText()).contains("coupons");
+        assertThat(rows("no-coupons-1")).as("the claimed header was rolled back").isZero();
+    }
+
     @Test
     void getUnknownIdIs404() {
         assertThat(get("txn_999999").getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
@@ -211,6 +221,8 @@ class TransactionApiTest extends ApiTestBase {
         partialMetadata.putObject("metadata").put("origin", "TXL");
         ObjectNode hotelShapedMetadata = JsonNodeFactory.instance.objectNode();
         hotelShapedMetadata.set("metadata", Fixtures.seed("hotel").get("metadata"));
+        ObjectNode emptyCoupons = JsonNodeFactory.instance.objectNode();
+        emptyCoupons.set("metadata", Fixtures.seed("duplicate_flight").get("metadata"));
         ObjectNode badLineAfterGoodTotal = JsonNodeFactory.instance.objectNode().put("total", 300.00);
         badLineAfterGoodTotal.putArray("tax_lines").addObject().put("name", "VAT").put("amount", 1.005);
 
@@ -220,6 +232,7 @@ class TransactionApiTest extends ApiTestBase {
                 JsonNodeFactory.instance.objectNode().put("external_id", "renamed"),
                 partialMetadata,
                 hotelShapedMetadata,
+                emptyCoupons,
                 badLineAfterGoodTotal);
         for (ObjectNode body : invalid) {
             assertThat(patch(id, body).getStatusCode()).as(body.toString()).isEqualTo(HttpStatus.BAD_REQUEST);
