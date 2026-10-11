@@ -1,0 +1,27 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: travel-billing
+  datasource:
+    # SQLite file DB. Connection pragmas (applied per connection by sqlite-jdbc):
+    #   foreign_keys=true        -> FK / ON DELETE CASCADE actually enforced (off by default in SQLite!)
+    #   journal_mode=WAL         -> readers don't block the single writer
+    #   busy_timeout=5000        -> a second writer waits instead of failing with SQLITE_BUSY
+    #   transaction_mode=IMMEDIATE -> BEGIN takes the write lock up front, so check-then-write
+    #                               (e.g. "is this txn invoiced?" then UPDATE) can't interleave
+    url: jdbc:sqlite:${BILLING_DB_PATH:./billing.db}?foreign_keys=true&journal_mode=WAL&busy_timeout=5000&transaction_mode=IMMEDIATE
+    driver-class-name: org.sqlite.JDBC
+    hikari:
+      maximum-pool-size: 4
+  flyway:
+    locations: classpath:db/migration
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+    default-property-inclusion: non_null
+    deserialization:
+      # The brief says "extra fields are fine" in metadata.
+      fail-on-unknown-properties: false
+    serialization:
+      write-dates-as-timestamps: false
