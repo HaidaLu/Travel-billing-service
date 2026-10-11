@@ -101,13 +101,21 @@ public class TransactionRepository {
     }
 
     /**
-     * TODO (step 6): one page of transactions with id &gt; afterId, ordered by id, bounded by SQL LIMIT.
-     *  - Fetch limit + 1 so the caller can tell whether there's a next page.
-     *  - Question: hydrating metadata per row is N+1 queries per page. Acceptable at max 100, or should the
-     *    list return headers + lines only and leave metadata to GET /{id}? Pick and document.
+     * Keyset page: rows with id &gt; afterId in id order, bounded by SQL LIMIT (a primary-key range seek, no OFFSET
+     * scan). Callers pass limit + 1 to learn whether a next page exists. Each row is fully hydrated, which costs a
+     * few queries per row (N+1); accepted because a page is at most 100 rows.
      */
     public List<Transaction> findPage(long afterId, int limitPlusOne) {
-        throw new UnsupportedOperationException("TODO");
+        return jdbc.sql("""
+                        SELECT id, type, external_id, currency, occurred_at, total_minor, created_at, updated_at
+                        FROM transactions WHERE id > :afterId ORDER BY id LIMIT :limit""")
+                .param("afterId", afterId)
+                .param("limit", limitPlusOne)
+                .query(HEADER)
+                .list()
+                .stream()
+                .map(this::hydrate)
+                .toList();
     }
 
     /**

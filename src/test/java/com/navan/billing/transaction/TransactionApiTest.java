@@ -2,6 +2,7 @@ package com.navan.billing.transaction;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -121,12 +122,37 @@ class TransactionApiTest extends ApiTestBase {
     }
 
     /**
-     * TODO: create &gt; 50 txns. GET /transactions returns exactly 50 plus a next cursor;
-     * limit=1000 → 400 (per PageRequest policy). Following the cursor yields the rest with no overlap.
+     * Other tests in this class add rows too (order not guaranteed), so instead of fixed page sizes this walks every
+     * page and compares the result with the ids in the DB: same order, nothing missing, nothing twice.
      */
     @Test
-    @Disabled("TODO")
     void t10_listIsBoundedAndPaginated() {
+        for (int i = 0; i < 55; i++) {
+            assertThat(post(seed("trip_fee", "t10-" + i)).getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        }
+
+        JsonNode firstPage = list("");
+        assertThat(firstPage.path("items").size()).as("default page size").isEqualTo(50);
+        assertThat(firstPage.hasNonNull("next_cursor")).isTrue();
+        assertThat(firstPage.at("/items/0/metadata").isObject()).as("list items are fully hydrated").isTrue();
+
+        List<String> walked = new ArrayList<>();
+        String cursor = null;
+        do {
+            JsonNode page = list("limit=20" + (cursor == null ? "" : "&cursor=" + cursor));
+            assertThat(page.path("items").size()).isLessThanOrEqualTo(20);
+            page.path("items").forEach(item -> walked.add(item.path("id").asText()));
+            cursor = page.hasNonNull("next_cursor") ? page.path("next_cursor").asText() : null;
+        } while (cursor != null);
+        List<String> allIds = jdbc.sql("SELECT id FROM transactions ORDER BY id").query(Long.class).list()
+                .stream().map(id -> "txn_" + id).toList();
+        assertThat(walked).containsExactlyElementsOf(allIds);
+
+        for (String bad : List.of("limit=1000", "limit=101", "limit=0", "cursor=not-a-cursor")) {
+            assertThat(http.getForEntity("/transactions?" + bad, JsonNode.class).getStatusCode())
+                    .as(bad).isEqualTo(HttpStatus.BAD_REQUEST);
+        }
+        assertThat(list("limit=100").path("items").size()).isEqualTo(Math.min(100, allIds.size()));
     }
 
     // Worth adding beyond the minimum: PATCH happy path, DELETE happy path (child rows gone).
@@ -143,6 +169,12 @@ class TransactionApiTest extends ApiTestBase {
 
     private ResponseEntity<JsonNode> get(String id) {
         return http.getForEntity("/transactions/" + id, JsonNode.class);
+    }
+
+    private JsonNode list(String query) {
+        ResponseEntity<JsonNode> response = http.getForEntity("/transactions?" + query, JsonNode.class);
+        assertThat(response.getStatusCode()).as(query).isEqualTo(HttpStatus.OK);
+        return response.getBody();
     }
 
     private long rows(String externalId) {

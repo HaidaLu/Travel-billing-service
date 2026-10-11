@@ -1,6 +1,7 @@
 package com.navan.billing.transaction.service;
 
 import java.time.Clock;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,9 +63,11 @@ public class TransactionService {
                 new NotFoundException("transaction " + PublicId.TRANSACTION.encode(id) + " not found"));
     }
 
-    /** TODO: one bounded page plus a next cursor (null on the last page). Never load the table to page in memory. */
+    /** One bounded page plus a next cursor (null on the last page). The bound is in SQL; nothing pages in memory. */
+    @Transactional(readOnly = true)
     public Page<Transaction> list(PageRequest page) {
-        throw new UnsupportedOperationException("TODO");
+        List<Transaction> rows = repository.findPage(page.afterId(), page.limit() + 1);
+        return Page.fromLookahead(rows, page.limit(), Transaction::id);
     }
 
     /**
