@@ -10,8 +10,10 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
@@ -109,6 +111,36 @@ class TransactionApiTest extends ApiTestBase {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody().path("message").asText()).contains("coupons");
         assertThat(rows("no-coupons-1")).as("the claimed header was rolled back").isZero();
+    }
+
+    /** 400 messages name the JSON field and the allowed values, never Java classes or camelCase field names. */
+    @Test
+    void badRequestMessagesSpeakJsonNotJava() {
+        ObjectNode cruise = seed("flight", "msg-1").put("type", "cruise");
+        ObjectNode loungeFee = seed("trip_fee", "msg-2");
+        ((ObjectNode) loungeFee.get("metadata")).put("fee_kind", "lounge_fee");
+        ObjectNode localTime = seed("trip_fee", "msg-3").put("occurred_at", "2026-03-11T06:40:00");
+        ObjectNode badDeparture = seed("flight", "msg-4");
+        ((ObjectNode) badDeparture.at("/metadata/coupons/0")).put("departure", "soon");
+        ObjectNode emptyHotel = seed("hotel", "msg-5");
+        emptyHotel.putObject("metadata");
+
+        Map<ObjectNode, String> expected = new LinkedHashMap<>();
+        expected.put(cruise, "unknown type 'cruise', expected one of [flight, hotel, rail, navan_fee]");
+        expected.put(loungeFee, "metadata.fee_kind: 'lounge_fee' is not allowed, expected one of [trip_fee, agent_call_fee]");
+        expected.put(localTime, "occurred_at: invalid value '2026-03-11T06:40:00', expected an ISO-8601 timestamp");
+        expected.put(badDeparture, "metadata.coupons[0].departure: invalid value 'soon'");
+        expected.put(emptyHotel, "metadata.check_in must not be null");
+        expected.forEach((body, message) -> assertCleanBadRequest(post(body), message));
+
+        assertCleanBadRequest(http.postForEntity("/transactions",
+                new HttpEntity<>("{\"type\": \"flight\",", jsonHeaders()), JsonNode.class), "malformed JSON");
+        String id = post(seed("trip_fee", "msg-6")).getBody().path("id").asText();
+        ObjectNode patch = JsonNodeFactory.instance.objectNode();
+        patch.putObject("metadata").put("fee_kind", "lounge_fee");
+        assertCleanBadRequest(patch(id, patch), "metadata.fee_kind: 'lounge_fee' is not allowed");
+        assertCleanBadRequest(patch(id, JsonNodeFactory.instance.objectNode().put("external_id", "x")),
+                "external_id cannot be changed");
     }
 
     @Test
@@ -298,6 +330,18 @@ class TransactionApiTest extends ApiTestBase {
                 http.postForEntity("/invoices", Map.of("transaction_id", transactionId), JsonNode.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         return response.getBody().path("id").asText();
+    }
+
+    private static void assertCleanBadRequest(ResponseEntity<JsonNode> response, String expectedMessagePart) {
+        String message = response.getBody().path("message").asText();
+        assertThat(response.getStatusCode()).as(message).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(message).contains(expectedMessagePart).doesNotContain("com.navan", "java.");
+    }
+
+    private static HttpHeaders jsonHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        return headers;
     }
 
     private JsonNode list(String query) {

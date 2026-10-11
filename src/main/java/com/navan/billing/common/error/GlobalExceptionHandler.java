@@ -12,6 +12,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.navan.billing.transaction.dto.metadata.TransactionMetadata;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -23,18 +27,30 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(e.status()).body(new ErrorResponse(e.code(), e.getMessage(), existingId));
     }
 
-    /** Malformed JSON, unknown {@code type} (InvalidTypeIdException), unknown enum such as {@code fee_kind}. */
+    /**
+     * Malformed JSON, unknown {@code type}, unknown enum such as {@code fee_kind}, wrong value types. Worded by
+     * {@link JsonErrors}; Jackson's own message is never echoed because it names internal classes.
+     *
+     * <p>Jackson drops the {@code metadata} segment from the path of values bound through the sibling {@code type}
+     * (EXTERNAL_PROPERTY), so a path that starts inside a metadata subtype gets it back.
+     */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     ResponseEntity<ErrorResponse> unreadable(HttpMessageNotReadableException e) {
-        String detail = e.getMostSpecificCause().getMessage();
+        String detail = "body is missing or not JSON";
+        if (e.getCause() instanceof JsonProcessingException jackson) {
+            boolean insideMetadata = jackson instanceof JsonMappingException mapping
+                    && JsonErrors.startsInside(mapping, TransactionMetadata.class);
+            detail = JsonErrors.describe(jackson, insideMetadata ? "metadata" : "");
+        }
         return ResponseEntity.badRequest().body(ErrorResponse.of("bad_request", "invalid request body: " + detail));
     }
 
-    /** Bean Validation failures on @Valid request bodies. */
+    /** Bean Validation failures on @Valid request bodies, reported with the JSON (snake_case) field names. */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     ResponseEntity<ErrorResponse> invalid(MethodArgumentNotValidException e) {
         String detail = e.getBindingResult().getFieldErrors().stream()
-                .map(f -> f.getField() + " " + f.getDefaultMessage())
+                .map(f -> JsonErrors.toJsonPath(f.getField()) + " " + f.getDefaultMessage())
+                .sorted()
                 .collect(Collectors.joining("; "));
         return ResponseEntity.badRequest().body(ErrorResponse.of("validation_failed", detail));
     }
