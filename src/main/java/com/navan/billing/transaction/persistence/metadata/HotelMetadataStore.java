@@ -1,14 +1,23 @@
 package com.navan.billing.transaction.persistence.metadata;
 
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
+import com.navan.billing.common.money.MinorUnits;
 import com.navan.billing.transaction.domain.TransactionType;
 import com.navan.billing.transaction.domain.metadata.HotelMetadata;
+import com.navan.billing.transaction.domain.metadata.HotelMetadata.Address;
+import com.navan.billing.transaction.domain.metadata.HotelMetadata.HotelExtra;
 
-/** Tables: hotel_details + hotel_extras (address is flattened into hotel_details columns). Follow {@link NavanFeeMetadataStore}; money columns are minor units. */
 @Component
 class HotelMetadataStore implements MetadataStore<HotelMetadata> {
+
+    private static final RowMapper<HotelExtra> EXTRA = (rs, n) ->
+            new HotelExtra(rs.getString("name"), MinorUnits.fromMinor(rs.getLong("amount_minor")));
 
     private final JdbcClient jdbc;
 
@@ -27,17 +36,61 @@ class HotelMetadataStore implements MetadataStore<HotelMetadata> {
     }
 
     @Override
-    public void insert(long transactionId, HotelMetadata metadata) {
-        throw new UnsupportedOperationException("TODO");
+    public void insert(long transactionId, HotelMetadata m) {
+        jdbc.sql("""
+                        INSERT INTO hotel_details (transaction_id, name, street, city, country,
+                                                   check_in, check_out, nights, room_rate_minor)
+                        VALUES (:id, :name, :street, :city, :country, :checkIn, :checkOut, :nights, :roomRate)""")
+                .param("id", transactionId)
+                .param("name", m.name())
+                .param("street", m.address().street())
+                .param("city", m.address().city())
+                .param("country", m.address().country())
+                .param("checkIn", m.checkIn().toString())
+                .param("checkOut", m.checkOut().toString())
+                .param("nights", m.nights())
+                .param("roomRate", MinorUnits.toMinor(m.roomRatePerNight()))
+                .update();
+        List<HotelExtra> extras = m.extras();
+        for (int position = 0; position < extras.size(); position++) {
+            HotelExtra extra = extras.get(position);
+            jdbc.sql("""
+                            INSERT INTO hotel_extras (transaction_id, position, name, amount_minor)
+                            VALUES (:id, :position, :name, :amount)""")
+                    .param("id", transactionId)
+                    .param("position", position)
+                    .param("name", extra.name())
+                    .param("amount", MinorUnits.toMinor(extra.amount()))
+                    .update();
+        }
     }
 
     @Override
     public HotelMetadata load(long transactionId) {
-        throw new UnsupportedOperationException("TODO");
+        List<HotelExtra> extras = jdbc.sql("""
+                        SELECT name, amount_minor FROM hotel_extras
+                        WHERE transaction_id = :id ORDER BY position""")
+                .param("id", transactionId)
+                .query(EXTRA)
+                .list();
+        return jdbc.sql("""
+                        SELECT name, street, city, country, check_in, check_out, nights, room_rate_minor
+                        FROM hotel_details WHERE transaction_id = :id""")
+                .param("id", transactionId)
+                .query((rs, n) -> new HotelMetadata(
+                        rs.getString("name"),
+                        new Address(rs.getString("street"), rs.getString("city"), rs.getString("country")),
+                        LocalDate.parse(rs.getString("check_in")),
+                        LocalDate.parse(rs.getString("check_out")),
+                        rs.getInt("nights"),
+                        MinorUnits.fromMinor(rs.getLong("room_rate_minor")),
+                        extras))
+                .single();
     }
 
     @Override
     public void delete(long transactionId) {
-        throw new UnsupportedOperationException("TODO");
+        jdbc.sql("DELETE FROM hotel_extras WHERE transaction_id = :id").param("id", transactionId).update();
+        jdbc.sql("DELETE FROM hotel_details WHERE transaction_id = :id").param("id", transactionId).update();
     }
 }

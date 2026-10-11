@@ -29,10 +29,6 @@ import com.navan.billing.transaction.domain.NewTransaction;
 import com.navan.billing.transaction.domain.TaxLine;
 import com.navan.billing.transaction.domain.Transaction;
 
-/**
- * Step 1: header + tax/fee lines against the real SQLite file. Uses trip_fee because NavanFeeMetadataStore is the
- * only metadata store implemented so far.
- */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 class TransactionRepositoryTest extends SqliteTestBase {
 

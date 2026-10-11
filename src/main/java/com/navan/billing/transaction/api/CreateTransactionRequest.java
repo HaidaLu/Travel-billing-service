@@ -26,7 +26,7 @@ public record CreateTransactionRequest(
         @NotNull List<@Valid @NotNull FeeLine> feeLines,
         @NotNull @Valid
         @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXTERNAL_PROPERTY,
-                property = "type", visible = true)
+                property = "type", visible = true) /**type will decide which metadata will be created */
         TransactionMetadata metadata) {
 
     public NewTransaction toNewTransaction() {

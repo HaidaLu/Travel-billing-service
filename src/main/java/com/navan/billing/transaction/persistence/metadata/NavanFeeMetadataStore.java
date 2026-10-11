@@ -7,7 +7,6 @@ import com.navan.billing.transaction.domain.TransactionType;
 import com.navan.billing.transaction.domain.metadata.NavanFeeKind;
 import com.navan.billing.transaction.domain.metadata.NavanFeeMetadata;
 
-/** Reference implementation for the other stores: one row in navan_fee_details. */
 @Component
 class NavanFeeMetadataStore implements MetadataStore<NavanFeeMetadata> {
 
