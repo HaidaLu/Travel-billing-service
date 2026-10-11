@@ -25,6 +25,11 @@ public class ConflictException extends ApiException {
                 "transaction " + transactionId + " is on an invoice and is frozen", null);
     }
 
+    public static ConflictException alreadyInvoiced(String transactionId, String invoiceId) {
+        return new ConflictException("transaction_already_invoiced",
+                "transaction " + transactionId + " is already on invoice " + invoiceId, null);
+    }
+
     public static ConflictException mixedCurrency(String message) {
         return new ConflictException("mixed_currency", message, null);
     }

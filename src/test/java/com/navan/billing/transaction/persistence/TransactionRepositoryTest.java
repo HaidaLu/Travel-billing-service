@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.navan.billing.common.time.DbTime;
 import com.navan.billing.support.Fixtures;
 import com.navan.billing.support.SqliteTestBase;
-import com.navan.billing.transaction.api.CreateTransactionRequest;
+import com.navan.billing.transaction.controller.CreateTransactionRequest;
 import com.navan.billing.transaction.domain.FeeLine;
 import com.navan.billing.transaction.domain.NewTransaction;
 import com.navan.billing.transaction.domain.TaxLine;

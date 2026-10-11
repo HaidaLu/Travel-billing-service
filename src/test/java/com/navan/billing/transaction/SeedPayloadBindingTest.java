@@ -11,7 +11,7 @@ import org.springframework.boot.test.autoconfigure.json.JsonTest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.navan.billing.support.Fixtures;
-import com.navan.billing.transaction.api.CreateTransactionRequest;
+import com.navan.billing.transaction.controller.CreateTransactionRequest;
 import com.navan.billing.transaction.domain.metadata.FlightMetadata;
 import com.navan.billing.transaction.domain.metadata.HotelMetadata;
 import com.navan.billing.transaction.domain.metadata.NavanFeeKind;

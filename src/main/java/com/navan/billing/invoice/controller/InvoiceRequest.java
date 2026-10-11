@@ -1,4 +1,4 @@
-package com.navan.billing.invoice.api;
+package com.navan.billing.invoice.controller;
 
 import java.util.List;
 

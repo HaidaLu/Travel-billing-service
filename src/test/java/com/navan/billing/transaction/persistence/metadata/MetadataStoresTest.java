@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.navan.billing.support.Fixtures;
 import com.navan.billing.support.SqliteTestBase;
-import com.navan.billing.transaction.api.CreateTransactionRequest;
+import com.navan.billing.transaction.controller.CreateTransactionRequest;
 import com.navan.billing.transaction.domain.NewTransaction;
 import com.navan.billing.transaction.domain.Transaction;
 import com.navan.billing.transaction.domain.metadata.FlightCoupon;

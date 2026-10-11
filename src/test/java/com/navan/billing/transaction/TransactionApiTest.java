@@ -7,7 +7,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -109,19 +108,35 @@ class TransactionApiTest extends ApiTestBase {
         assertThat(get("not-an-id").getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
-    /**
-     * TODO (needs POST /invoices, step 9): create txn → invoice it → PATCH total. Expect 409; GET txn shows the old
-     * total; GET invoice totals unchanged. Until then the 409 rule is covered by invoicedTransactionIsFrozen.
-     */
     @Test
-    @Disabled("TODO")
     void t07_patchInvoicedTransactionIs409() {
+        JsonNode before = post(seed("trip_fee", "t07-fee")).getBody();
+        String id = before.path("id").asText();
+        String invoiceId = invoice(id);
+        JsonNode invoiceBefore = http.getForEntity("/invoices/" + invoiceId, JsonNode.class).getBody();
+
+        ResponseEntity<JsonNode> patched = patch(id, JsonNodeFactory.instance.objectNode().put("total", 99.00));
+
+        assertThat(patched.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(patched.getBody().path("code").asText()).isEqualTo("transaction_invoiced");
+        assertThat(get(id).getBody()).as("nothing persisted").isEqualTo(before);
+        assertThat(invoiceBefore.path("total").decimalValue()).isEqualByComparingTo("25.00");
+        assertThat(http.getForEntity("/invoices/" + invoiceId, JsonNode.class).getBody())
+                .as("invoice snapshot totals unchanged").isEqualTo(invoiceBefore);
     }
 
-    /** TODO (needs POST /invoices, step 9): create txn → invoice it → DELETE txn. Expect 409; GET txn is still 200. */
     @Test
-    @Disabled("TODO")
     void t08_deleteInvoicedTransactionIs409() {
+        JsonNode before = post(seed("trip_fee", "t08-fee")).getBody();
+        String id = before.path("id").asText();
+        invoice(id);
+
+        ResponseEntity<JsonNode> deleted = delete(id);
+
+        assertThat(deleted.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(deleted.getBody().path("code").asText()).isEqualTo("transaction_invoiced");
+        assertThat(get(id).getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(get(id).getBody()).isEqualTo(before);
     }
 
     /**
@@ -214,22 +229,6 @@ class TransactionApiTest extends ApiTestBase {
         assertThat(get(id).getBody()).isEqualTo(before);
     }
 
-    /** Interim: puts the row on an invoice through SQL until POST /invoices exists (then t07/t08 take over). */
-    @Test
-    void invoicedTransactionIsFrozen() {
-        JsonNode before = post(seed("trip_fee", "invoiced-1")).getBody();
-        String id = before.path("id").asText();
-        putOnInvoice(rowId(id));
-
-        ResponseEntity<JsonNode> patched = patch(id, JsonNodeFactory.instance.objectNode().put("total", 99.00));
-        ResponseEntity<JsonNode> deleted = delete(id);
-
-        assertThat(patched.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
-        assertThat(patched.getBody().path("code").asText()).isEqualTo("transaction_invoiced");
-        assertThat(deleted.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
-        assertThat(get(id).getBody()).as("nothing persisted, nothing deleted").isEqualTo(before);
-    }
-
     @Test
     void deleteRemovesTheRowAndAllItsChildren() {
         String id = post(seed("flight", "delete-flight-1")).getBody().path("id").asText();
@@ -282,17 +281,11 @@ class TransactionApiTest extends ApiTestBase {
                 .param("id", rowId).query(Long.class).single();
     }
 
-    /** Until POST /invoices exists (step 9): the minimum rows that make a transaction count as invoiced. */
-    private void putOnInvoice(long rowId) {
-        long invoiceId = jdbc.sql("""
-                        INSERT INTO invoices (currency, total_minor, created_at, updated_at)
-                        VALUES ('EUR', 0, '2026-01-01T00:00:00.000Z', '2026-01-01T00:00:00.000Z') RETURNING id""")
-                .query(Long.class).single();
-        jdbc.sql("""
-                        INSERT INTO invoice_lines
-                            (invoice_id, position, transaction_id, type, external_id, total_minor, snapshot_json)
-                        VALUES (:invoiceId, 0, :id, 'navan_fee', 'n/a', 0, '{}')""")
-                .param("invoiceId", invoiceId).param("id", rowId).update();
+    private String invoice(String transactionId) {
+        ResponseEntity<JsonNode> response =
+                http.postForEntity("/invoices", Map.of("transaction_id", transactionId), JsonNode.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        return response.getBody().path("id").asText();
     }
 
     private JsonNode list(String query) {

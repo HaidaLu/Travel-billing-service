@@ -1,4 +1,4 @@
-package com.navan.billing.transaction.api;
+package com.navan.billing.transaction.controller;
 
 import java.math.BigDecimal;
 import java.time.Instant;
