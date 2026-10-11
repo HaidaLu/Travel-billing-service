@@ -12,11 +12,11 @@ import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.navan.billing.support.Fixtures;
 import com.navan.billing.transaction.controller.CreateTransactionRequest;
-import com.navan.billing.transaction.domain.metadata.FlightMetadata;
-import com.navan.billing.transaction.domain.metadata.HotelMetadata;
-import com.navan.billing.transaction.domain.metadata.NavanFeeKind;
-import com.navan.billing.transaction.domain.metadata.NavanFeeMetadata;
-import com.navan.billing.transaction.domain.metadata.RailMetadata;
+import com.navan.billing.transaction.dto.metadata.FlightMetadata;
+import com.navan.billing.transaction.dto.metadata.HotelMetadata;
+import com.navan.billing.transaction.dto.metadata.NavanFeeKind;
+import com.navan.billing.transaction.dto.metadata.NavanFeeMetadata;
+import com.navan.billing.transaction.dto.metadata.RailMetadata;
 
 @JsonTest
 class SeedPayloadBindingTest {

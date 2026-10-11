@@ -21,10 +21,10 @@ import org.springframework.transaction.IllegalTransactionStateException;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import com.navan.billing.support.SqliteTestBase;
-import com.navan.billing.transaction.domain.NewTransaction;
-import com.navan.billing.transaction.domain.TransactionType;
-import com.navan.billing.transaction.domain.metadata.NavanFeeKind;
-import com.navan.billing.transaction.domain.metadata.NavanFeeMetadata;
+import com.navan.billing.transaction.dto.NewTransaction;
+import com.navan.billing.transaction.dto.TransactionType;
+import com.navan.billing.transaction.dto.metadata.NavanFeeKind;
+import com.navan.billing.transaction.dto.metadata.NavanFeeMetadata;
 import com.navan.billing.transaction.identity.IdentityClaim.AlreadyExists;
 import com.navan.billing.transaction.identity.IdentityClaim.Claimed;
 

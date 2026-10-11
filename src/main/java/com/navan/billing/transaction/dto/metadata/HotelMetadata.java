@@ -1,11 +1,11 @@
-package com.navan.billing.transaction.domain.metadata;
+package com.navan.billing.transaction.dto.metadata;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.navan.billing.transaction.domain.TransactionType;
+import com.navan.billing.transaction.dto.TransactionType;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;

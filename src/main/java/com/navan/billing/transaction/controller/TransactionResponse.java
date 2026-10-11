@@ -5,11 +5,11 @@ import java.time.Instant;
 import java.util.List;
 
 import com.navan.billing.common.id.PublicId;
-import com.navan.billing.transaction.domain.FeeLine;
-import com.navan.billing.transaction.domain.TaxLine;
-import com.navan.billing.transaction.domain.Transaction;
-import com.navan.billing.transaction.domain.TransactionType;
-import com.navan.billing.transaction.domain.metadata.TransactionMetadata;
+import com.navan.billing.transaction.dto.FeeLine;
+import com.navan.billing.transaction.dto.TaxLine;
+import com.navan.billing.transaction.dto.Transaction;
+import com.navan.billing.transaction.dto.TransactionType;
+import com.navan.billing.transaction.dto.metadata.TransactionMetadata;
 
 public record TransactionResponse(
         String id,

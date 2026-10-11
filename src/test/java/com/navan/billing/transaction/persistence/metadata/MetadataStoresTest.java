@@ -22,14 +22,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.navan.billing.support.Fixtures;
 import com.navan.billing.support.SqliteTestBase;
 import com.navan.billing.transaction.controller.CreateTransactionRequest;
-import com.navan.billing.transaction.domain.NewTransaction;
-import com.navan.billing.transaction.domain.Transaction;
-import com.navan.billing.transaction.domain.metadata.FlightCoupon;
-import com.navan.billing.transaction.domain.metadata.FlightMetadata;
-import com.navan.billing.transaction.domain.metadata.HotelMetadata;
-import com.navan.billing.transaction.domain.metadata.RailLeg;
-import com.navan.billing.transaction.domain.metadata.RailMetadata;
-import com.navan.billing.transaction.domain.metadata.TransactionMetadata;
+import com.navan.billing.transaction.dto.NewTransaction;
+import com.navan.billing.transaction.dto.Transaction;
+import com.navan.billing.transaction.dto.metadata.FlightCoupon;
+import com.navan.billing.transaction.dto.metadata.FlightMetadata;
+import com.navan.billing.transaction.dto.metadata.HotelMetadata;
+import com.navan.billing.transaction.dto.metadata.RailLeg;
+import com.navan.billing.transaction.dto.metadata.RailMetadata;
+import com.navan.billing.transaction.dto.metadata.TransactionMetadata;
 import com.navan.billing.transaction.persistence.TransactionRepository;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)

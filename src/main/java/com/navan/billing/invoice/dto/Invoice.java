@@ -1,4 +1,4 @@
-package com.navan.billing.invoice.domain;
+package com.navan.billing.invoice.dto;
 
 import java.math.BigDecimal;
 import java.time.Instant;

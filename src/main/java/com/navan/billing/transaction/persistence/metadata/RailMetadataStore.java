@@ -7,9 +7,9 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
 import com.navan.billing.common.time.DbTime;
-import com.navan.billing.transaction.domain.TransactionType;
-import com.navan.billing.transaction.domain.metadata.RailLeg;
-import com.navan.billing.transaction.domain.metadata.RailMetadata;
+import com.navan.billing.transaction.dto.TransactionType;
+import com.navan.billing.transaction.dto.metadata.RailLeg;
+import com.navan.billing.transaction.dto.metadata.RailMetadata;
 
 @Component
 class RailMetadataStore implements MetadataStore<RailMetadata> {

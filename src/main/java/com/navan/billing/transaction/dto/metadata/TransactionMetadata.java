@@ -1,7 +1,7 @@
-package com.navan.billing.transaction.domain.metadata;
+package com.navan.billing.transaction.dto.metadata;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.navan.billing.transaction.domain.TransactionType;
+import com.navan.billing.transaction.dto.TransactionType;
 
 /**
  * Type-specific details. Sealed, so a flight can never be stored as a hotel blob and a {@code switch}

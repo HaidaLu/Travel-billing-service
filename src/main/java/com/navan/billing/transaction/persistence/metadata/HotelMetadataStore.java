@@ -8,10 +8,10 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
 import com.navan.billing.common.money.MinorUnits;
-import com.navan.billing.transaction.domain.TransactionType;
-import com.navan.billing.transaction.domain.metadata.HotelMetadata;
-import com.navan.billing.transaction.domain.metadata.HotelMetadata.Address;
-import com.navan.billing.transaction.domain.metadata.HotelMetadata.HotelExtra;
+import com.navan.billing.transaction.dto.TransactionType;
+import com.navan.billing.transaction.dto.metadata.HotelMetadata;
+import com.navan.billing.transaction.dto.metadata.HotelMetadata.Address;
+import com.navan.billing.transaction.dto.metadata.HotelMetadata.HotelExtra;
 
 @Component
 class HotelMetadataStore implements MetadataStore<HotelMetadata> {

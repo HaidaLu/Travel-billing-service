@@ -13,13 +13,13 @@ import org.springframework.stereotype.Component;
 
 import com.navan.billing.common.error.ConflictException;
 import com.navan.billing.common.id.PublicId;
-import com.navan.billing.invoice.domain.FeeRollupLine;
-import com.navan.billing.invoice.domain.InvoiceDraft;
-import com.navan.billing.invoice.domain.TaxRollupLine;
-import com.navan.billing.invoice.domain.TransactionSnapshot;
-import com.navan.billing.transaction.domain.FeeLine;
-import com.navan.billing.transaction.domain.TaxLine;
-import com.navan.billing.transaction.domain.Transaction;
+import com.navan.billing.invoice.dto.FeeRollupLine;
+import com.navan.billing.invoice.dto.InvoiceDraft;
+import com.navan.billing.invoice.dto.TaxRollupLine;
+import com.navan.billing.invoice.dto.TransactionSnapshot;
+import com.navan.billing.transaction.dto.FeeLine;
+import com.navan.billing.transaction.dto.TaxLine;
+import com.navan.billing.transaction.dto.Transaction;
 
 /**
  * Snapshot/rollup seam: a pure function from stored transactions to an {@link InvoiceDraft}.

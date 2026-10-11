@@ -15,11 +15,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.navan.billing.common.id.PublicId;
 import com.navan.billing.common.money.MinorUnits;
 import com.navan.billing.common.time.DbTime;
-import com.navan.billing.invoice.domain.FeeRollupLine;
-import com.navan.billing.invoice.domain.Invoice;
-import com.navan.billing.invoice.domain.InvoiceDraft;
-import com.navan.billing.invoice.domain.TaxRollupLine;
-import com.navan.billing.invoice.domain.TransactionSnapshot;
+import com.navan.billing.invoice.dto.FeeRollupLine;
+import com.navan.billing.invoice.dto.Invoice;
+import com.navan.billing.invoice.dto.InvoiceDraft;
+import com.navan.billing.invoice.dto.TaxRollupLine;
+import com.navan.billing.invoice.dto.TransactionSnapshot;
 import com.navan.billing.transaction.service.InvoiceReferenceChecker;
 
 /**

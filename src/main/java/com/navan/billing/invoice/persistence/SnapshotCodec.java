@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.navan.billing.invoice.domain.TransactionSnapshot;
+import com.navan.billing.invoice.dto.TransactionSnapshot;
 
 /** (De)serializes {@link TransactionSnapshot} to/from invoice_lines.snapshot_json. */
 @Component

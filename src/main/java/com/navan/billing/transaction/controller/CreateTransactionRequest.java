@@ -5,11 +5,11 @@ import java.time.Instant;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.navan.billing.transaction.domain.FeeLine;
-import com.navan.billing.transaction.domain.NewTransaction;
-import com.navan.billing.transaction.domain.TaxLine;
-import com.navan.billing.transaction.domain.TransactionType;
-import com.navan.billing.transaction.domain.metadata.TransactionMetadata;
+import com.navan.billing.transaction.dto.FeeLine;
+import com.navan.billing.transaction.dto.NewTransaction;
+import com.navan.billing.transaction.dto.TaxLine;
+import com.navan.billing.transaction.dto.TransactionType;
+import com.navan.billing.transaction.dto.metadata.TransactionMetadata;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;

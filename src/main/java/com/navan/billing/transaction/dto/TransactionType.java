@@ -1,4 +1,4 @@
-package com.navan.billing.transaction.domain;
+package com.navan.billing.transaction.dto;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 

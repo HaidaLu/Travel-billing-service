@@ -10,17 +10,17 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import com.navan.billing.common.error.ConflictException;
-import com.navan.billing.invoice.domain.FeeRollupLine;
-import com.navan.billing.invoice.domain.InvoiceDraft;
-import com.navan.billing.invoice.domain.TaxRollupLine;
-import com.navan.billing.invoice.domain.TransactionSnapshot;
+import com.navan.billing.invoice.dto.FeeRollupLine;
+import com.navan.billing.invoice.dto.InvoiceDraft;
+import com.navan.billing.invoice.dto.TaxRollupLine;
+import com.navan.billing.invoice.dto.TransactionSnapshot;
 import com.navan.billing.invoice.snapshot.InvoiceSnapshotBuilder;
-import com.navan.billing.transaction.domain.FeeLine;
-import com.navan.billing.transaction.domain.TaxLine;
-import com.navan.billing.transaction.domain.Transaction;
-import com.navan.billing.transaction.domain.TransactionType;
-import com.navan.billing.transaction.domain.metadata.NavanFeeKind;
-import com.navan.billing.transaction.domain.metadata.NavanFeeMetadata;
+import com.navan.billing.transaction.dto.FeeLine;
+import com.navan.billing.transaction.dto.TaxLine;
+import com.navan.billing.transaction.dto.Transaction;
+import com.navan.billing.transaction.dto.TransactionType;
+import com.navan.billing.transaction.dto.metadata.NavanFeeKind;
+import com.navan.billing.transaction.dto.metadata.NavanFeeMetadata;
 
 /** Pure unit tests for the rollup logic. No Spring, no DB. */
 class InvoiceSnapshotBuilderTest {

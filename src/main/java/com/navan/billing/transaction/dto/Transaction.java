@@ -1,10 +1,10 @@
-package com.navan.billing.transaction.domain;
+package com.navan.billing.transaction.dto;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
-import com.navan.billing.transaction.domain.metadata.TransactionMetadata;
+import com.navan.billing.transaction.dto.metadata.TransactionMetadata;
 
 /** A stored transaction, fully hydrated (header + tax/fee lines + typed metadata). */
 public record Transaction(

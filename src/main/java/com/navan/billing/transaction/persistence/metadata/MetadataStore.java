@@ -1,7 +1,7 @@
 package com.navan.billing.transaction.persistence.metadata;
 
-import com.navan.billing.transaction.domain.TransactionType;
-import com.navan.billing.transaction.domain.metadata.TransactionMetadata;
+import com.navan.billing.transaction.dto.TransactionType;
+import com.navan.billing.transaction.dto.metadata.TransactionMetadata;
 
 /**
  * Strategy per transaction type: knows that type's child tables and nothing else.
