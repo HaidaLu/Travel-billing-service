@@ -21,6 +21,7 @@ import com.navan.billing.transaction.controller.PatchTransactionRequest;
 import com.navan.billing.transaction.domain.NewTransaction;
 import com.navan.billing.transaction.domain.Transaction;
 import com.navan.billing.transaction.domain.TransactionType;
+import com.navan.billing.transaction.domain.metadata.FlightMetadata;
 import com.navan.billing.transaction.domain.metadata.TransactionMetadata;
 import com.navan.billing.transaction.identity.IdentityClaim;
 import com.navan.billing.transaction.identity.TransactionIdentityService;
@@ -66,6 +67,7 @@ public class TransactionService {
                     PublicId.TRANSACTION.encode(existing.existingId()));
         }
         long id = ((IdentityClaim.Claimed) claim).id();
+        enforceWriteRules(tx.metadata());
         repository.insertChildren(id, tx);
         return repository.findById(id).orElseThrow();
     }
@@ -155,6 +157,17 @@ public class TransactionService {
                     .sorted()
                     .collect(Collectors.joining("; ")));
         }
+        enforceWriteRules(metadata);
         return metadata;
+    }
+
+    /**
+     * Rules for rows about to be written, checked after the duplicate claim so a duplicate still gets its 409 (see
+     * FlightMetadata). On create the header is already inserted at this point; the 400 rolls it back.
+     */
+    private static void enforceWriteRules(TransactionMetadata metadata) {
+        if (metadata instanceof FlightMetadata flight && flight.coupons().isEmpty()) {
+            throw new BadRequestException("metadata.coupons must not be empty");
+        }
     }
 }

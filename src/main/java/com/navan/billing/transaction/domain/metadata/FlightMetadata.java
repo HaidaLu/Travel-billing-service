@@ -10,10 +10,11 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-/*
- * Decision to make: should `coupons` be @NotEmpty?
- * The fixture `duplicate_flight` has "coupons": []. If validation runs before the identity check,
- * that duplicate POST returns 400 instead of 409-with-existing-id. Decide the order (or the rule) on purpose.
+/**
+ * {@code coupons} is deliberately not {@code @NotEmpty}: request validation runs before the duplicate check, so the
+ * fixture's duplicate_flight ({@code "coupons": []}) would get 400 instead of 409 + existing id. "A flight has at
+ * least one coupon" is enforced by TransactionService on rows it is about to write (create after the external_id
+ * claim, and PATCH).
  */
 public record FlightMetadata(
         @NotBlank String origin,

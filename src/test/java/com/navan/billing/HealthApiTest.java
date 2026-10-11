@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 
 import com.navan.billing.support.ApiTestBase;
 
-/** Smoke test proving the harness works: app boots, Flyway migrates, the SQLite file answers. */
 class HealthApiTest extends ApiTestBase {
 
     @Test

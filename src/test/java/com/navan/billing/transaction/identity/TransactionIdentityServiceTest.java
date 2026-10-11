@@ -28,7 +28,6 @@ import com.navan.billing.transaction.domain.metadata.NavanFeeMetadata;
 import com.navan.billing.transaction.identity.IdentityClaim.AlreadyExists;
 import com.navan.billing.transaction.identity.IdentityClaim.Claimed;
 
-/** Step 3: one header row per external_id, decided by the unique index, including under overlapping claims. */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 class TransactionIdentityServiceTest extends SqliteTestBase {
 
