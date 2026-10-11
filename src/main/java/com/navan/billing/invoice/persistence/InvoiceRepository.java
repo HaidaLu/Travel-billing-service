@@ -51,9 +51,11 @@ public class InvoiceRepository implements InvoiceReferenceChecker {
         throw new UnsupportedOperationException("TODO");
     }
 
-    /** TODO: EXISTS on invoice_lines.transaction_id (indexed). */
     @Override
     public boolean isInvoiced(long transactionId) {
-        throw new UnsupportedOperationException("TODO");
+        return jdbc.sql("SELECT EXISTS (SELECT 1 FROM invoice_lines WHERE transaction_id = :id)")
+                .param("id", transactionId)
+                .query(Boolean.class)
+                .single();
     }
 }

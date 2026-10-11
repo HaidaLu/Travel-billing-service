@@ -10,11 +10,14 @@ import java.util.Map;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.navan.billing.support.ApiTestBase;
 import com.navan.billing.support.Fixtures;
@@ -107,15 +110,15 @@ class TransactionApiTest extends ApiTestBase {
     }
 
     /**
-     * TODO: create txn → invoice it → PATCH total. Expect 409; GET txn shows the old total;
-     * GET invoice totals unchanged.
+     * TODO (needs POST /invoices, step 9): create txn → invoice it → PATCH total. Expect 409; GET txn shows the old
+     * total; GET invoice totals unchanged. Until then the 409 rule is covered by invoicedTransactionIsFrozen.
      */
     @Test
     @Disabled("TODO")
     void t07_patchInvoicedTransactionIs409() {
     }
 
-    /** TODO: create txn → invoice it → DELETE txn. Expect 409; GET txn is still 200. */
+    /** TODO (needs POST /invoices, step 9): create txn → invoice it → DELETE txn. Expect 409; GET txn is still 200. */
     @Test
     @Disabled("TODO")
     void t08_deleteInvoicedTransactionIs409() {
@@ -155,7 +158,98 @@ class TransactionApiTest extends ApiTestBase {
         assertThat(list("limit=100").path("items").size()).isEqualTo(Math.min(100, allIds.size()));
     }
 
-    // Worth adding beyond the minimum: PATCH happy path, DELETE happy path (child rows gone).
+    @Test
+    void patchChangesOnlySentFieldsAndReplacesWholeLists() {
+        JsonNode before = post(seed("hotel", "patch-hotel-1")).getBody();
+        String id = before.path("id").asText();
+        ObjectNode metadata = (ObjectNode) Fixtures.seed("hotel").get("metadata");
+        metadata.put("name", "Hotel Mitte London (renovated)").putArray("extras");
+        ObjectNode body = JsonNodeFactory.instance.objectNode().put("total", 345.70);
+        body.putArray("tax_lines")
+                .add(JsonNodeFactory.instance.objectNode().put("name", "VAT").put("rate", 0.07).put("amount", 21.70))
+                .add(JsonNodeFactory.instance.objectNode().put("name", "City tax").put("amount", 14.00));
+        body.set("metadata", metadata);
+
+        ResponseEntity<JsonNode> patched = patch(id, body);
+
+        assertThat(patched.getStatusCode()).isEqualTo(HttpStatus.OK);
+        JsonNode after = get(id).getBody();
+        assertThat(patched.getBody()).as("PATCH returns the stored record").isEqualTo(after);
+        assertThat(after.path("total").decimalValue()).isEqualByComparingTo("345.70");
+        assertThat(after.at("/tax_lines/1/name").asText()).isEqualTo("City tax");
+        assertThat(after.at("/metadata/name").asText()).isEqualTo("Hotel Mitte London (renovated)");
+        assertThat(after.at("/metadata/extras").size()).isZero();
+        assertThat(after.path("fee_lines")).as("not sent → unchanged").isEqualTo(before.path("fee_lines"));
+        assertThat(after.path("occurred_at")).as("not sent → unchanged").isEqualTo(before.path("occurred_at"));
+        assertThat(after.path("updated_at").asText()).isGreaterThan(before.path("updated_at").asText());
+        long rowId = rowId(id);
+        assertThat(childRows("transaction_tax_lines", rowId)).isEqualTo(2);
+        assertThat(childRows("hotel_extras", rowId)).isZero();
+    }
+
+    /** Every request here must fail AND leave the stored row byte-for-byte as it was (including updated_at). */
+    @Test
+    void invalidPatchIs400AndChangesNothing() {
+        JsonNode before = post(seed("flight", "patch-flight-1")).getBody();
+        String id = before.path("id").asText();
+        ObjectNode partialMetadata = JsonNodeFactory.instance.objectNode();
+        partialMetadata.putObject("metadata").put("origin", "TXL");
+        ObjectNode hotelShapedMetadata = JsonNodeFactory.instance.objectNode();
+        hotelShapedMetadata.set("metadata", Fixtures.seed("hotel").get("metadata"));
+        ObjectNode badLineAfterGoodTotal = JsonNodeFactory.instance.objectNode().put("total", 300.00);
+        badLineAfterGoodTotal.putArray("tax_lines").addObject().put("name", "VAT").put("amount", 1.005);
+
+        List<ObjectNode> invalid = List.of(
+                JsonNodeFactory.instance.objectNode().put("currency", "USD"),
+                JsonNodeFactory.instance.objectNode().put("type", "hotel"),
+                JsonNodeFactory.instance.objectNode().put("external_id", "renamed"),
+                partialMetadata,
+                hotelShapedMetadata,
+                badLineAfterGoodTotal);
+        for (ObjectNode body : invalid) {
+            assertThat(patch(id, body).getStatusCode()).as(body.toString()).isEqualTo(HttpStatus.BAD_REQUEST);
+        }
+
+        assertThat(patch(id, partialMetadata).getBody().path("message").asText()).contains("metadata.destination");
+        assertThat(get(id).getBody()).isEqualTo(before);
+    }
+
+    /** Interim: puts the row on an invoice through SQL until POST /invoices exists (then t07/t08 take over). */
+    @Test
+    void invoicedTransactionIsFrozen() {
+        JsonNode before = post(seed("trip_fee", "invoiced-1")).getBody();
+        String id = before.path("id").asText();
+        putOnInvoice(rowId(id));
+
+        ResponseEntity<JsonNode> patched = patch(id, JsonNodeFactory.instance.objectNode().put("total", 99.00));
+        ResponseEntity<JsonNode> deleted = delete(id);
+
+        assertThat(patched.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(patched.getBody().path("code").asText()).isEqualTo("transaction_invoiced");
+        assertThat(deleted.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(get(id).getBody()).as("nothing persisted, nothing deleted").isEqualTo(before);
+    }
+
+    @Test
+    void deleteRemovesTheRowAndAllItsChildren() {
+        String id = post(seed("flight", "delete-flight-1")).getBody().path("id").asText();
+        long rowId = rowId(id);
+
+        assertThat(delete(id).getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+
+        assertThat(get(id).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(delete(id).getStatusCode()).as("second delete").isEqualTo(HttpStatus.NOT_FOUND);
+        for (String table : List.of("transaction_tax_lines", "transaction_fee_lines", "flight_details", "flight_coupons")) {
+            assertThat(childRows(table, rowId)).as(table).isZero();
+        }
+    }
+
+    @Test
+    void patchAndDeleteUnknownIdAre404() {
+        assertThat(patch("txn_999999", JsonNodeFactory.instance.objectNode().put("total", 1.00)).getStatusCode())
+                .isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(delete("txn_999999").getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
 
     // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -169,6 +263,36 @@ class TransactionApiTest extends ApiTestBase {
 
     private ResponseEntity<JsonNode> get(String id) {
         return http.getForEntity("/transactions/" + id, JsonNode.class);
+    }
+
+    private ResponseEntity<JsonNode> patch(String id, ObjectNode body) {
+        return http.exchange("/transactions/" + id, HttpMethod.PATCH, new HttpEntity<>(body), JsonNode.class);
+    }
+
+    private ResponseEntity<JsonNode> delete(String id) {
+        return http.exchange("/transactions/" + id, HttpMethod.DELETE, null, JsonNode.class);
+    }
+
+    private static long rowId(String publicId) {
+        return Long.parseLong(publicId.substring("txn_".length()));
+    }
+
+    private long childRows(String table, long rowId) {
+        return jdbc.sql("SELECT COUNT(*) FROM " + table + " WHERE transaction_id = :id")
+                .param("id", rowId).query(Long.class).single();
+    }
+
+    /** Until POST /invoices exists (step 9): the minimum rows that make a transaction count as invoiced. */
+    private void putOnInvoice(long rowId) {
+        long invoiceId = jdbc.sql("""
+                        INSERT INTO invoices (currency, total_minor, created_at, updated_at)
+                        VALUES ('EUR', 0, '2026-01-01T00:00:00.000Z', '2026-01-01T00:00:00.000Z') RETURNING id""")
+                .query(Long.class).single();
+        jdbc.sql("""
+                        INSERT INTO invoice_lines
+                            (invoice_id, position, transaction_id, type, external_id, total_minor, snapshot_json)
+                        VALUES (:invoiceId, 0, :id, 'navan_fee', 'n/a', 0, '{}')""")
+                .param("invoiceId", invoiceId).param("id", rowId).update();
     }
 
     private JsonNode list(String query) {

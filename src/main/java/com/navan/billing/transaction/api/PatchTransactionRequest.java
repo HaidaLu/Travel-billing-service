@@ -10,11 +10,15 @@ import com.navan.billing.transaction.domain.TaxLine;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Null;
 
 public record PatchTransactionRequest(
         Instant occurredAt,
         BigDecimal total,
         List<@Valid @NotNull TaxLine> taxLines,
         List<@Valid @NotNull FeeLine> feeLines,
-        JsonNode metadata) {
+        JsonNode metadata,
+        @Null(message = "cannot be changed") JsonNode type,
+        @Null(message = "cannot be changed") JsonNode externalId,
+        @Null(message = "cannot be changed") JsonNode currency) {
 }
