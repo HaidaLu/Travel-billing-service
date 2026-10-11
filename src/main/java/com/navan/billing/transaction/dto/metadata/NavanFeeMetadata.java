@@ -1,7 +1,7 @@
-package com.navan.billing.transaction.domain.metadata;
+package com.navan.billing.transaction.dto.metadata;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.navan.billing.transaction.domain.TransactionType;
+import com.navan.billing.transaction.dto.TransactionType;
 
 import jakarta.validation.constraints.NotNull;
 

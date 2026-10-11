@@ -24,10 +24,10 @@ import com.navan.billing.common.time.DbTime;
 import com.navan.billing.support.Fixtures;
 import com.navan.billing.support.SqliteTestBase;
 import com.navan.billing.transaction.controller.CreateTransactionRequest;
-import com.navan.billing.transaction.domain.FeeLine;
-import com.navan.billing.transaction.domain.NewTransaction;
-import com.navan.billing.transaction.domain.TaxLine;
-import com.navan.billing.transaction.domain.Transaction;
+import com.navan.billing.transaction.dto.FeeLine;
+import com.navan.billing.transaction.dto.NewTransaction;
+import com.navan.billing.transaction.dto.TaxLine;
+import com.navan.billing.transaction.dto.Transaction;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 class TransactionRepositoryTest extends SqliteTestBase {

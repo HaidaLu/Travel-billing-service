@@ -5,8 +5,8 @@ import java.time.Instant;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.navan.billing.transaction.domain.FeeLine;
-import com.navan.billing.transaction.domain.TaxLine;
+import com.navan.billing.transaction.dto.FeeLine;
+import com.navan.billing.transaction.dto.TaxLine;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;

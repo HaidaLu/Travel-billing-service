@@ -3,9 +3,9 @@ package com.navan.billing.transaction.persistence.metadata;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
-import com.navan.billing.transaction.domain.TransactionType;
-import com.navan.billing.transaction.domain.metadata.NavanFeeKind;
-import com.navan.billing.transaction.domain.metadata.NavanFeeMetadata;
+import com.navan.billing.transaction.dto.TransactionType;
+import com.navan.billing.transaction.dto.metadata.NavanFeeKind;
+import com.navan.billing.transaction.dto.metadata.NavanFeeMetadata;
 
 @Component
 class NavanFeeMetadataStore implements MetadataStore<NavanFeeMetadata> {

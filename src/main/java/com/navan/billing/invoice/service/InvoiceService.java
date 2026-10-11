@@ -14,11 +14,11 @@ import com.navan.billing.common.error.NotFoundException;
 import com.navan.billing.common.id.PublicId;
 import com.navan.billing.common.page.Page;
 import com.navan.billing.common.page.PageRequest;
-import com.navan.billing.invoice.domain.Invoice;
-import com.navan.billing.invoice.domain.InvoiceDraft;
+import com.navan.billing.invoice.dto.Invoice;
+import com.navan.billing.invoice.dto.InvoiceDraft;
 import com.navan.billing.invoice.persistence.InvoiceRepository;
 import com.navan.billing.invoice.snapshot.InvoiceSnapshotBuilder;
-import com.navan.billing.transaction.domain.Transaction;
+import com.navan.billing.transaction.dto.Transaction;
 import com.navan.billing.transaction.persistence.TransactionRepository;
 
 /**

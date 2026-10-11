@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.navan.billing.transaction.domain.NewTransaction;
+import com.navan.billing.transaction.dto.NewTransaction;
 import com.navan.billing.transaction.persistence.TransactionRepository;
 
 @Component

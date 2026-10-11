@@ -5,10 +5,10 @@ import java.time.Instant;
 import java.util.List;
 
 import com.navan.billing.common.id.PublicId;
-import com.navan.billing.invoice.domain.FeeRollupLine;
-import com.navan.billing.invoice.domain.Invoice;
-import com.navan.billing.invoice.domain.TaxRollupLine;
-import com.navan.billing.invoice.domain.TransactionSnapshot;
+import com.navan.billing.invoice.dto.FeeRollupLine;
+import com.navan.billing.invoice.dto.Invoice;
+import com.navan.billing.invoice.dto.TaxRollupLine;
+import com.navan.billing.invoice.dto.TransactionSnapshot;
 
 public record InvoiceResponse(
         String id,

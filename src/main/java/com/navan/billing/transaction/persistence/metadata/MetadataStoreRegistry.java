@@ -6,8 +6,8 @@ import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
-import com.navan.billing.transaction.domain.TransactionType;
-import com.navan.billing.transaction.domain.metadata.TransactionMetadata;
+import com.navan.billing.transaction.dto.TransactionType;
+import com.navan.billing.transaction.dto.metadata.TransactionMetadata;
 
 /** Routes a {@link TransactionType} to its {@link MetadataStore}. Fails fast at startup if a type has no store. */
 @Component

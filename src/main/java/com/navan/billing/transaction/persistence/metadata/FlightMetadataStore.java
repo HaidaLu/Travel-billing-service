@@ -8,9 +8,9 @@ import org.springframework.stereotype.Component;
 
 import com.navan.billing.common.money.MinorUnits;
 import com.navan.billing.common.time.DbTime;
-import com.navan.billing.transaction.domain.TransactionType;
-import com.navan.billing.transaction.domain.metadata.FlightCoupon;
-import com.navan.billing.transaction.domain.metadata.FlightMetadata;
+import com.navan.billing.transaction.dto.TransactionType;
+import com.navan.billing.transaction.dto.metadata.FlightCoupon;
+import com.navan.billing.transaction.dto.metadata.FlightMetadata;
 
 @Component
 class FlightMetadataStore implements MetadataStore<FlightMetadata> {

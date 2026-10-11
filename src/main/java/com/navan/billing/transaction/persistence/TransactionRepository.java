@@ -15,11 +15,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.navan.billing.common.money.MinorUnits;
 import com.navan.billing.common.time.DbTime;
-import com.navan.billing.transaction.domain.FeeLine;
-import com.navan.billing.transaction.domain.NewTransaction;
-import com.navan.billing.transaction.domain.TaxLine;
-import com.navan.billing.transaction.domain.Transaction;
-import com.navan.billing.transaction.domain.TransactionType;
+import com.navan.billing.transaction.dto.FeeLine;
+import com.navan.billing.transaction.dto.NewTransaction;
+import com.navan.billing.transaction.dto.TaxLine;
+import com.navan.billing.transaction.dto.Transaction;
+import com.navan.billing.transaction.dto.TransactionType;
 import com.navan.billing.transaction.persistence.metadata.MetadataStoreRegistry;
 
 @Repository

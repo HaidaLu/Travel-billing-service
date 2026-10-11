@@ -12,11 +12,11 @@ import org.springframework.boot.test.autoconfigure.json.JsonTest;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.navan.billing.invoice.domain.TransactionSnapshot;
+import com.navan.billing.invoice.dto.TransactionSnapshot;
 import com.navan.billing.support.Fixtures;
 import com.navan.billing.transaction.controller.CreateTransactionRequest;
-import com.navan.billing.transaction.domain.NewTransaction;
-import com.navan.billing.transaction.domain.Transaction;
+import com.navan.billing.transaction.dto.NewTransaction;
+import com.navan.billing.transaction.dto.Transaction;
 
 /** invoice_lines.snapshot_json must decode back to exactly what was encoded, for every type, with one "type" key. */
 @JsonTest

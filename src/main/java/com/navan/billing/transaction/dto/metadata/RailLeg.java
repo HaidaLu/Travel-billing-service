@@ -1,4 +1,4 @@
-package com.navan.billing.transaction.domain.metadata;
+package com.navan.billing.transaction.dto.metadata;
 
 import java.time.Instant;
 
