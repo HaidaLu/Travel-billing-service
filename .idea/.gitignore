@@ -1,0 +1,22 @@
+# Build output
+target/
+
+# Local SQLite DB (+ WAL side files) created by ./mvnw spring-boot:run
+*.db
+*.db-shm
+*.db-wal
+
+# Secrets
+.env
+.env.*
+
+# IDE / OS
+.idea/
+*.iml
+.vscode/
+.DS_Store
+*.log
+
+# Private notes / assignment brief — not part of the submission
+PLAN.md
+task-b-travel-inventory-invoice-CANDIDATE.md
