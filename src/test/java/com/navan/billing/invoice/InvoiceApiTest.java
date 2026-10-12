@@ -1,6 +1,7 @@
 package com.navan.billing.invoice;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
 
 import java.math.BigDecimal;
@@ -11,6 +12,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -132,6 +134,30 @@ class InvoiceApiTest extends ApiTestBase {
         assertThat(elsewhere.getBody().path("message").asText()).contains(otherInvoice);
         assertThat(count("SELECT COUNT(*) FROM invoices")).isEqualTo(invoicesBefore);
         assertThat(patchTxnTotal(a, "26.00").getStatusCode()).as("a was never invoiced").isEqualTo(HttpStatus.OK);
+    }
+
+    /**
+     * One invoice per transaction is also a schema rule, not only the service's 409: copying a's line onto a second
+     * invoice in SQL, bypassing the service, is refused by the database.
+     */
+    @Test
+    void schemaRefusesATransactionOnTwoInvoices() {
+        String a = createTxn("trip_fee", "schema-a");
+        String b = createTxn("agent_call_fee", "schema-b");
+        String first = postInvoice(List.of(a)).getBody().path("id").asText();
+        String second = postInvoice(List.of(b)).getBody().path("id").asText();
+
+        assertThatThrownBy(() -> jdbc.sql("""
+                        INSERT INTO invoice_lines
+                            (invoice_id, position, transaction_id, type, external_id, total_minor, snapshot_json)
+                        SELECT :second, 1, transaction_id, type, external_id, total_minor, snapshot_json
+                        FROM invoice_lines WHERE invoice_id = :first""")
+                .param("second", rowId(second))
+                .param("first", rowId(first))
+                .update())
+                .isInstanceOf(DataAccessException.class)
+                .hasMessageContaining("UNIQUE constraint failed: invoice_lines.transaction_id");
+        assertThat(count("SELECT COUNT(*) FROM invoice_lines WHERE transaction_id = " + rowId(a))).isEqualTo(1);
     }
 
     @Test

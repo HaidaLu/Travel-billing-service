@@ -119,7 +119,7 @@ public class InvoiceRepository implements InvoiceReferenceChecker {
         return jdbc.sql("DELETE FROM invoices WHERE id = :id").param("id", id).update();
     }
 
-    /** The invoice a transaction is on, if any (served by ix_invoice_lines_transaction_id). */
+    /** The invoice a transaction is on, if any (served by ux_invoice_lines_transaction_id). */
     public OptionalLong findInvoiceContaining(long transactionId) {
         return jdbc.sql("SELECT invoice_id FROM invoice_lines WHERE transaction_id = :id LIMIT 1")
                 .param("id", transactionId)
@@ -129,7 +129,7 @@ public class InvoiceRepository implements InvoiceReferenceChecker {
                 .orElseGet(OptionalLong::empty);
     }
 
-    /** Served by ix_invoice_lines_transaction_id; EXISTS stops at the first matching line. */
+    /** Served by ux_invoice_lines_transaction_id; EXISTS stops at the first matching line. */
     @Override
     public boolean isInvoiced(long transactionId) {
         return jdbc.sql("SELECT EXISTS (SELECT 1 FROM invoice_lines WHERE transaction_id = :id)")
@@ -183,7 +183,7 @@ public class InvoiceRepository implements InvoiceReferenceChecker {
                     .update();
         }
     }
-
+    // seperate from transaction
     private Invoice hydrate(Header h) {
         List<TransactionSnapshot> lines = jdbc.sql("""
                         SELECT snapshot_json FROM invoice_lines WHERE invoice_id = :id ORDER BY position""")

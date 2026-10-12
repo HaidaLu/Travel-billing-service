@@ -60,8 +60,13 @@ public class TransactionService {
         this.clock = clock;
     }
 
+    /**
+     * 1. deduplicate external_id using identity claim service
+     * 2. validate based on business request (for flight, at least one coupon is needed)
+     */
     @Transactional
     public Transaction create(NewTransaction tx) {
+        // insert transaction and deduplicate
         IdentityClaim claim = identity.claim(tx, clock.instant());
         if (claim instanceof IdentityClaim.AlreadyExists existing) {
             throw ConflictException.duplicateExternalId(tx.externalId(),
@@ -69,6 +74,7 @@ public class TransactionService {
         }
         long id = ((IdentityClaim.Claimed) claim).id();
         enforceWriteRules(tx.metadata());
+        // insert texlines, feelines and metadata store.
         repository.insertChildren(id, tx);
         return repository.findById(id).orElseThrow();
     }
@@ -86,13 +92,9 @@ public class TransactionService {
     }
 
     /**
-     * Partial update: an absent field stays unchanged, a list that is sent replaces the stored list, and metadata
-     * (if sent) replaces the stored metadata and must be the full shape of the STORED type.
-     *
      * <p>404 if missing; 409 if the transaction is on any invoice, and nothing is written. The invoiced check and the
      * writes share one DB transaction; with transaction_mode=IMMEDIATE it holds SQLite's write lock from BEGIN, so a
-     * concurrent POST /invoices can't snapshot this row between the check and the write. (On Postgres this needs a
-     * row lock, e.g. SELECT ... FOR UPDATE on the transaction, taken by both sides.)
+     * concurrent POST /invoices can't snapshot this row between the check and the write.
      */
     @Transactional
     public Transaction patch(long id, PatchTransactionRequest patch) {
