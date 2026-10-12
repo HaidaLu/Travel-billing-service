@@ -1,4 +1,3 @@
--- DRAFT schema — the data model is part of the exercise; revise freely before implementing.
 --
 -- Conventions
 --   money      : INTEGER minor units at fixed scale 2 (220.00 EUR -> 22000). See ARCHITECTURE.md.
@@ -121,10 +120,11 @@ CREATE TABLE invoice_lines (
     external_id    TEXT    NOT NULL,
     total_minor    INTEGER NOT NULL,
     snapshot_json  TEXT    NOT NULL,
-    PRIMARY KEY (invoice_id, position),
-    UNIQUE (invoice_id, transaction_id)
+    PRIMARY KEY (invoice_id, position)
 );
-CREATE INDEX ix_invoice_lines_transaction_id ON invoice_lines (transaction_id);
+-- A transaction is on at most one invoice (and so at most once per invoice). Also serves the
+-- "is this txn invoiced?" lookup.
+CREATE UNIQUE INDEX ux_invoice_lines_transaction_id ON invoice_lines (transaction_id);
 
 CREATE TABLE invoice_tax_rollup (
     invoice_id   INTEGER NOT NULL REFERENCES invoices (id) ON DELETE CASCADE,

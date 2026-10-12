@@ -29,6 +29,8 @@ public record TransactionSnapshot(
                 property = "type", visible = true)
         TransactionMetadata metadata) {
 
+    // copy on write
+    // invoice data and transaction data will be irrelevant
     public static TransactionSnapshot of(String publicId, Transaction t) {
         return new TransactionSnapshot(publicId, t.type(), t.externalId(), t.currency(), t.occurredAt(),
                 t.total(), List.copyOf(t.taxLines()), List.copyOf(t.feeLines()), t.metadata());

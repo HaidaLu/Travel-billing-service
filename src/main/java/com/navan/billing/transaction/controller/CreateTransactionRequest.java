@@ -16,6 +16,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
+/** a request handler to resolve from json request to NewTransaction, specified by type */
 public record CreateTransactionRequest(
         @NotNull TransactionType type,
         @NotBlank String externalId,

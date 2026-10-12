@@ -22,6 +22,9 @@ import com.navan.billing.transaction.dto.Transaction;
 import com.navan.billing.transaction.dto.TransactionType;
 import com.navan.billing.transaction.persistence.metadata.MetadataStoreRegistry;
 
+/**
+ * transactionRepository must be used in the transaction of service, otherwise will throw exception
+ */
 @Repository
 @Transactional(propagation = Propagation.MANDATORY)
 public class TransactionRepository {
