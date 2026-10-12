@@ -61,12 +61,13 @@ public class TransactionService {
     }
 
     /**
-     * 1. deduplicate external_id using identity claim service
-     * 2. validate based on business request (for flight, at least one coupon is needed)
+     * Claims the external_id (409 with the existing id if it is taken), checks the write rules (a flight needs at
+     * least one coupon), then writes the tax lines, fee lines and metadata. All in one DB transaction: if any step
+     * fails, the header rolls back too.
      */
     @Transactional
     public Transaction create(NewTransaction tx) {
-        // insert transaction and deduplicate
+        // inserts the header, or inserts nothing if the external_id already exists
         IdentityClaim claim = identity.claim(tx, clock.instant());
         if (claim instanceof IdentityClaim.AlreadyExists existing) {
             throw ConflictException.duplicateExternalId(tx.externalId(),
@@ -74,7 +75,7 @@ public class TransactionService {
         }
         long id = ((IdentityClaim.Claimed) claim).id();
         enforceWriteRules(tx.metadata());
-        // insert texlines, feelines and metadata store.
+        // tax lines, fee lines and the type's metadata tables
         repository.insertChildren(id, tx);
         return repository.findById(id).orElseThrow();
     }
@@ -92,6 +93,10 @@ public class TransactionService {
     }
 
     /**
+     * Partial update: an absent field stays unchanged, a list that is sent replaces the stored list, and metadata
+     * (if sent) replaces the stored metadata and must be the full shape of the STORED type. Sending type,
+     * external_id or currency is a 400 (see {@link PatchTransactionRequest}).
+     *
      * <p>404 if missing; 409 if the transaction is on any invoice, and nothing is written. The invoiced check and the
      * writes share one DB transaction; with transaction_mode=IMMEDIATE it holds SQLite's write lock from BEGIN, so a
      * concurrent POST /invoices can't snapshot this row between the check and the write.
