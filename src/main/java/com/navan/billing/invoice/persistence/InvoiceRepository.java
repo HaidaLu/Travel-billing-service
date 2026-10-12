@@ -183,7 +183,7 @@ public class InvoiceRepository implements InvoiceReferenceChecker {
                     .update();
         }
     }
-    // seperate from transaction
+    // separate from transaction
     private Invoice hydrate(Header h) {
         List<TransactionSnapshot> lines = jdbc.sql("""
                         SELECT snapshot_json FROM invoice_lines WHERE invoice_id = :id ORDER BY position""")
